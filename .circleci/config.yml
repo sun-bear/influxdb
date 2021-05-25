@@ -53,7 +53,7 @@ jobs:
       - run:
           name: Start influxdb
           command: |
-            debname=$(find /temp/workspace/influxdb*amd64.deb)
+            debname=$(find /temp/workspace/packages/influxdb*amd64.deb)
             sudo apt install -y $debname
             sudo systemctl unmask influxdb.service
             sudo systemctl start influxdb

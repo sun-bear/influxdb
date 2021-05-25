@@ -108,18 +108,18 @@ case $ENVIRONMENT_INDEX in
     1)
         # 64 bit race tests
         GORACE="halt_on_error=1"
-        run_test_docker Dockerfile_build_ubuntu64 test_64bit_race --test --junit-report --race --package
+        run_test_docker Dockerfile_build_ubuntu64 test_64bit_race --test --junit-report --race
         rc=$?
         ;;
     2)
         # 32 bit tests
-        run_test_docker Dockerfile_build_ubuntu32 test_32bit --test --junit-report --arch=i386 --package
+        run_test_docker Dockerfile_build_ubuntu32 test_32bit --test --junit-report --arch=i386
         rc=$?
         ;;
     3)
         # tsi
         INFLUXDB_DATA_INDEX_VERSION="tsi1"
-        run_test_docker Dockerfile_build_ubuntu64 test_64bit --test --junit-report --package
+        run_test_docker Dockerfile_build_ubuntu64 test_64bit --test --junit-report
         rc=$?
         ;;
     "count")

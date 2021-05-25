@@ -64,3 +64,6 @@ workflows:
   on_push:
     jobs:
       - build_and_test
+      - perf_test:
+          requires:
+            - build_and_test

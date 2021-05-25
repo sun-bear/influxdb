@@ -33,7 +33,7 @@ require (
 	github.com/golang/gddo v0.0.0-20181116215533-9bd4a3295021
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.3.3
-	github.com/golang/snappy v0.0.1
+	github.com/golang/snappy v0.0.2
 	github.com/google/btree v1.0.0
 	github.com/google/go-cmp v0.5.4
 	github.com/google/go-github v17.0.0+incompatible
@@ -56,7 +56,6 @@ require (
 	github.com/jwilder/encoding v0.0.0-20170811194829-b4e1701a28ef
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/kevinburke/go-bindata v3.11.0+incompatible
-	github.com/lib/pq v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.12
 	github.com/mattn/go-sqlite3 v1.14.7
 	github.com/matttproud/golang_protobuf_extensions v1.0.1
@@ -89,6 +88,7 @@ require (
 	github.com/tinylib/msgp v1.1.0
 	github.com/tylerb/graceful v1.2.15
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
+	github.com/upper/db/v4 v4.1.0
 	github.com/willf/bitset v1.1.9 // indirect
 	github.com/xlab/treeprint v1.0.0
 	github.com/yudai/gojsondiff v1.0.0
@@ -108,7 +108,7 @@ require (
 	google.golang.org/api v0.17.0
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.1 // indirect
 	gopkg.in/yaml.v2 v2.3.0
-	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 	honnef.co/go/tools v0.0.1-2020.1.4
 	labix.org/v2/mgo v0.0.0-20140701140051-000000000287 // indirect
 	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect

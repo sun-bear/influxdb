@@ -7,9 +7,8 @@ import (
 	"strconv"
 	"sync"
 
-	// sqlite3 driver
-	_ "github.com/mattn/go-sqlite3"
-
+	db "github.com/upper/db/v4"
+	usqlite "github.com/upper/db/v4/adapter/sqlite"
 	"go.uber.org/zap"
 )
 
@@ -21,16 +20,21 @@ const (
 // SqlStore is a wrapper around the db and provides basic functionality for maintaining the db
 // including flushing the data from the db during end-to-end testing.
 type SqlStore struct {
-	mu  sync.Mutex
-	db  *sql.DB
-	log *zap.Logger
+	mu   sync.Mutex
+	DB   *sql.DB
+	log  *zap.Logger
+	Sess db.Session
 }
 
 func NewSqlStore(path string, log *zap.Logger) (*SqlStore, error) {
-	db, err := sql.Open("sqlite3", path)
+	sess, err := usqlite.Open(usqlite.ConnectionURL{
+		Database: path,
+	})
 	if err != nil {
 		return nil, err
 	}
+
+	db := sess.Driver().(*sql.DB)
 	log.Info("Resources opened", zap.String("path", path))
 
 	// If using an in-memory database, don't allow more than 1 connection. Each connection
@@ -42,14 +46,15 @@ func NewSqlStore(path string, log *zap.Logger) (*SqlStore, error) {
 	}
 
 	return &SqlStore{
-		db:  db,
-		log: log,
+		DB:   db,
+		log:  log,
+		Sess: sess,
 	}, nil
 }
 
 // Close the connection to the sqlite database
 func (s *SqlStore) Close() error {
-	err := s.db.Close()
+	err := s.Sess.Close()
 	if err != nil {
 		return err
 	}
@@ -80,7 +85,7 @@ func (s *SqlStore) execTrans(ctx context.Context, stmt string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	tx, err := s.db.BeginTx(ctx, nil)
+	tx, err := s.DB.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
@@ -124,7 +129,7 @@ func (s *SqlStore) tableNames() ([]string, error) {
 func (s *SqlStore) queryToStrings(stmt string) ([]string, error) {
 	var output []string
 
-	rows, err := s.db.Query(stmt)
+	rows, err := s.DB.Query(stmt)
 	if err != nil {
 		return nil, err
 	}

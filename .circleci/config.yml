@@ -24,16 +24,19 @@ workflows:
       - build:
           matrix:
             parameters:
-              executor: [linux-amd64, linux-arm64]
+              executor:
+                - linux-amd64
+                - linux-arm64
+      - test:
+          matrix:
+            parameters:
+              executor:
+                - linux-amd64
+                - linux-arm64
 
-jobs:
-  build:
-    parameters:
-      executor:
-        type: executor
-    executor: << parameters.executor >>
+commands:
+  linux-setup:
     steps:
-      - checkout
       - run:
           name: Set GOPATH
           command: |
@@ -48,13 +51,27 @@ jobs:
               clang \
               libprotobuf-dev \
               pkg-config \
-              protobuf-compiler \
-              musl-tools
+              protobuf-compiler
       - run:
           name: Install Rust toolchain
           command: |
-            curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -t ${RUST_TARGET} -y
+            curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y
             echo 'export PATH=${HOME}/.cargo/bin:${PATH}' >> $BASH_ENV
+
+jobs:
+  build:
+    parameters:
+      executor:
+        type: executor
+    executor: << parameters.executor >>
+    steps:
+      - checkout
+      - linux-setup
+      - run:
+          name: Install static build dependencies
+          command: |
+            sudo apt-get install -y --no-install-recommends musl-tools
+            rustup target add ${RUST_TARGET}
       - run:
           name: Install goreleaser
           environment:
@@ -71,3 +88,24 @@ jobs:
           command: goreleaser build --snapshot --single-target
       - store_artifacts:
           path: dist
+
+  test:
+    parameters:
+      executor:
+        type: executor
+    executor: << parameters.executor >>
+    parallelism: 8
+    steps:
+      - checkout
+      - linux-setup
+      - run:
+          name: Run race tests
+          command: |
+            GO_TEST_CMD="gotestsum --format standard-quiet --junitfile /tmp/test-results/gotestsum.xml -- -p=4"
+            TESTFILES=($(go list ./... | circleci tests split --split-by=timings))
+            make GO_TEST_CMD="$GO_TEST_CMD" GO_TEST_PATHS="${TESTFILES[*]}" test-go-race
+      - store_artifacts:
+          path: /tmp/test-results
+          destination: raw-test-output
+      - store_test_results:
+          path: /tmp/test-results

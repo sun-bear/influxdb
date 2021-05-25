@@ -1,7 +1,14 @@
 version: 2
 
+commands:
+  quay_login:
+    steps:
+      - run:
+          name: Log in to Quay
+          command: docker login -u "$QUAY_USER" -p $QUAY_PASS quay.io
+
 jobs:
-  build:
+  build_and_test:
     machine:
       enabled: true
       docker_layer_caching: true
@@ -9,6 +16,8 @@ jobs:
       - PARALLELISM: 4 # Input to influxdb/build.py
     parallelism: 4 # How many CircleCI test containers
     steps:
+      - attach_workspace:
+          at: /tmp/workspace
       - checkout
       - run:
           name: Ensure CircleCI parallelism matches "./test.sh count"
@@ -17,3 +26,34 @@ jobs:
           name: Execute test
           command: ./test.sh $CIRCLE_NODE_INDEX
           no_output_timeout: 1500s
+      - run:
+          name: Rename and save docker image
+          command: |
+            mkdir -p quay.io/influxdb
+            mv test_64bit quay.io/influxdb/${CIRCLE_BRANCH}-oss-acceptance:${CIRCLE_SHA1}
+            docker save -o docker-image.tar quay.io/influxdb/${CIRCLE_BRANCH}-oss-acceptance:${CIRCLE_SHA1}
+      - store_artifacts:
+          path: quay.io/
+      - persist_to_workspace:
+          root: .
+          paths:
+            - docker-image.tar
+  push_to_quay:
+    machine:
+      enabled: true
+      docker_layer_caching: true
+    steps:
+      - quay_login
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Push the candidate image to quay
+          command: |
+            cd /tmp/workspace
+            docker push quay.io/influxdb/${CIRCLE_BRANCH}-oss-acceptance:${CIRCLE_SHA1}
+
+workflows:
+  version: 2
+  on_push:
+    jobs:
+      - build_and_test

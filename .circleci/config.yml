@@ -26,18 +26,22 @@ jobs:
           name: Execute test
           command: ./test.sh $CIRCLE_NODE_INDEX
           no_output_timeout: 1500s
-      - run:
-          name: Rename packages
-          command: |
-            set -x
-            ls build
-            mv build packages
-      - store_artifacts:
-          path: packages/
-      - persist_to_workspace:
-          root: .
-          paths:
-            - packages/*.deb
+      - when:
+          condition:
+            equal: [ 0, $CIRCLE_NODE_INDEX ]
+          steps:
+            - run:
+                name: Rename packages
+                command: |
+                  set -x
+                  ls build
+                  mv build packages
+            - store_artifacts:
+                path: packages/
+            - persist_to_workspace:
+                root: .
+                paths:
+                  - packages/*.deb
   perf_test:
     machine:
       image: ubuntu-2004:202010-01

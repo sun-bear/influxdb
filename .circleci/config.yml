@@ -48,7 +48,8 @@ jobs:
               clang \
               libprotobuf-dev \
               pkg-config \
-              protobuf-compiler
+              protobuf-compiler \
+              musl-tools
       - run:
           name: Install Rust toolchain
           command: |

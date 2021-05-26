@@ -37,3 +37,11 @@ COPY entrypoint.sh /entrypoint.sh
 COPY init-influxdb.sh /init-influxdb.sh
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["influxd"]
+
+FROM python:alpine
+# MAINTAINER sunnybear <docker-sunbear@beconfidential.org>
+
+COPY ./apcupsd-influxdb-exporter.py /apcupsd-influxdb-exporter.py
+RUN pip install  tzdata apcaccess influxdb
+
+CMD ["python", "/apcupsd-influxdb-exporter.py"]

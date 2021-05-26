@@ -5,6 +5,7 @@ RUN apk add --no-cache tzdata bash ca-certificates && \
     update-ca-certificates
 
 ENV INFLUXDB_VERSION 1.8.6
+RUN pip install apcaccess
 RUN set -ex && \
     mkdir ~/.gnupg; \
     echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf; \
@@ -35,13 +36,7 @@ VOLUME /var/lib/influxdb
 
 COPY entrypoint.sh /entrypoint.sh
 COPY init-influxdb.sh /init-influxdb.sh
+COPY ./apcupsd-influxdb-exporter.py /apcupsd-influxdb-exporter.py
+# CMD ["python", "/apcupsd-influxdb-exporter.py"]
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["influxd"]
-
-FROM python:alpine
-# MAINTAINER sunnybear <docker-sunbear@beconfidential.org>
-
-COPY ./apcupsd-influxdb-exporter.py /apcupsd-influxdb-exporter.py
-RUN pip install  tzdata apcaccess influxdb
-
-CMD ["python", "/apcupsd-influxdb-exporter.py"]
